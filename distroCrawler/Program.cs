@@ -100,6 +100,7 @@ namespace distroCrawler
             }
             else if (argTuple.Item1 == "2")
             {
+                UpdateDB();
             }
             else
             {
@@ -129,6 +130,11 @@ namespace distroCrawler
             string message = "Data was extracted in " + (DateTime.Now - dt).Seconds + " secs.";
             logger.Info(message);
             Console.WriteLine(message);
+        }
+
+        static void UpdateDB()
+        {
+
         }
 
         static string GetWebSiteData(string url)
