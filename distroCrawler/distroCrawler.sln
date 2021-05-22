@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Model", "..\..\distroTrends
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helper", "..\..\distroTrendsWeb\Helper\Helper.csproj", "{BAC6AD17-07F4-4C53-9EEA-2DD0B139606D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DAL", "..\..\distroTrendsWeb\DAL\DAL.csproj", "{6FA4EDF0-6214-4CA9-9CE1-8C74EBA7A982}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BLL", "..\..\distroTrendsWeb\BLL\BLL.csproj", "{F20A3967-600B-4D3B-8E44-FF6FDE3E9520}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{BAC6AD17-07F4-4C53-9EEA-2DD0B139606D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BAC6AD17-07F4-4C53-9EEA-2DD0B139606D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BAC6AD17-07F4-4C53-9EEA-2DD0B139606D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FA4EDF0-6214-4CA9-9CE1-8C74EBA7A982}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FA4EDF0-6214-4CA9-9CE1-8C74EBA7A982}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FA4EDF0-6214-4CA9-9CE1-8C74EBA7A982}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FA4EDF0-6214-4CA9-9CE1-8C74EBA7A982}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F20A3967-600B-4D3B-8E44-FF6FDE3E9520}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F20A3967-600B-4D3B-8E44-FF6FDE3E9520}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F20A3967-600B-4D3B-8E44-FF6FDE3E9520}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F20A3967-600B-4D3B-8E44-FF6FDE3E9520}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

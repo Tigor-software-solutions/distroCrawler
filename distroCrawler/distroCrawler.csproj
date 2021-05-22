@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\distroTrendsWeb\BLL\BLL.csproj" />
     <ProjectReference Include="..\..\distroTrendsWeb\Helper\Helper.csproj" />
     <ProjectReference Include="..\..\distroTrendsWeb\Model\Model.csproj" />
   </ItemGroup>

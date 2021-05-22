@@ -2,6 +2,7 @@
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -12,8 +13,104 @@ namespace distroCrawler
         static Logger logger = LogManager.GetCurrentClassLogger();
         static void Main(string[] args)
         {
-            Console.WriteLine("Distro Crawler Program.");
+            string version = string.Empty;
+            string message = string.Empty;
 
+            System.Reflection.Assembly assembly = System.Reflection.Assembly.GetExecutingAssembly();
+            FileVersionInfo fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
+            version = fvi.FileVersion;
+            Program ob = new Program();
+            //Console.WriteLine("Program to restart the application is started.");
+            Console.WriteLine("*******************************************");
+            Console.WriteLine("Distro Crawler Program. (v" + version + ")");
+            Console.WriteLine("*******************************************");
+            Console.WriteLine();
+            Console.WriteLine("1 - Crawl Data.");
+            Console.WriteLine("2 - Update Database");
+            Console.WriteLine();
+            Console.Write("Please enter your choice - ");
+
+            if (args.Length == 0)
+            {
+                message = "Console Argument is not provided";
+                logger.Info(message);
+                ob.CheckUserResponse();
+            }
+            else
+            {
+                Tuple<string, string, string, string> argTuple = GetCommandArg(args);
+                ob.MainWrapper(argTuple);
+            }
+
+            Console.WriteLine("Press any key to exit.");
+            Console.Read();
+        }
+
+        private void CheckUserResponse()
+        {
+            var userInput = Console.ReadLine();
+            Tuple<string, string, string, string> argTuple = new Tuple<string, string, string, string>(userInput, null, null, null);
+            MainWrapper(argTuple);
+        }
+
+        private static Tuple<string, string, string, string> GetCommandArg(string[] args)
+        {
+            Tuple<string, string, string, string> argTuple = null;
+            string mode = null, dbName = null, dbScriptFolderPath = null;
+            logger.Info(string.Format("parameter count = {0}", args.Length));
+
+            for (int i = 0; i < args.Length; i++)
+            {
+                logger.Trace(string.Format("Arg[{0}] = [{1}]", i, args[i]));
+            }
+            foreach (string arg in args)
+            {
+                if (arg.Length >= 3)
+                {
+                    switch (arg.Substring(0, 2).ToUpper())
+                    {
+                        case "/M"://MODE
+                            mode = arg.Substring(3);
+                            break;
+                        case "/D"://DB Name
+                            dbName = arg.Substring(3);
+                            break;
+                        case "/F"://DB Name
+                            dbScriptFolderPath = arg.Substring(3);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            logger.Debug("DbName = " + dbName);
+            logger.Debug("FolderPath = " + dbScriptFolderPath);
+            argTuple = new Tuple<string, string, string, string>(mode, dbName, dbScriptFolderPath, string.Empty);
+            return argTuple;
+        }
+
+
+        private int MainWrapper(Tuple<string, string, string, string> argTuple)
+        {
+            int exitCode = 0;
+            if (argTuple.Item1 == "1")
+            {
+                CrawlData();
+            }
+            else if (argTuple.Item1 == "2")
+            {
+            }
+            else
+            {
+                Console.WriteLine("No supported option.");
+            }
+
+            return exitCode;
+        }
+
+        static void CrawlData()
+        {
             string url = "https://distrowatch.com/dwres.php?resource=popularity";
             DateTime dt = DateTime.Now;
             string data = GetWebSiteData(url);
@@ -32,8 +129,6 @@ namespace distroCrawler
             string message = "Data was extracted in " + (DateTime.Now - dt).Seconds + " secs.";
             logger.Info(message);
             Console.WriteLine(message);
-            Console.WriteLine("Press any key to exit.");
-            Console.Read();
         }
 
         static string GetWebSiteData(string url)
