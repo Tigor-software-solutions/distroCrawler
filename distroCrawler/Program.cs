@@ -94,13 +94,15 @@ namespace distroCrawler
         private int MainWrapper(Tuple<string, string, string, string> argTuple)
         {
             int exitCode = 0;
+
             if (argTuple.Item1 == "1")
             {
                 CrawlData();
             }
             else if (argTuple.Item1 == "2")
             {
-                UpdateDB();
+                List<distroTrend.Model.Distro> listDistro = CrawlData();
+                UpdateDB(listDistro);
             }
             else
             {
@@ -110,7 +112,7 @@ namespace distroCrawler
             return exitCode;
         }
 
-        static void CrawlData()
+        static List<distroTrend.Model.Distro> CrawlData()
         {
             string url = "https://distrowatch.com/dwres.php?resource=popularity";
             DateTime dt = DateTime.Now;
@@ -130,11 +132,44 @@ namespace distroCrawler
             string message = "Data was extracted in " + (DateTime.Now - dt).Seconds + " secs.";
             logger.Info(message);
             Console.WriteLine(message);
+
+            return listDistro;
         }
 
-        static void UpdateDB()
+        static void UpdateDB(List<distroTrend.Model.Distro> listDistro)
         {
+            BLL.Distro distroBL = new BLL.Distro();
 
+            string sqlConn = System.Configuration.ConfigurationManager.AppSettings["dbConnection"];
+
+            string message = string.Empty;
+
+            foreach (distroTrend.Model.Distro distro in listDistro)
+            {
+                message = string.Empty;
+
+                distroTrend.Model.Distro distroDb = distroBL.GetDistro(distro.Code, sqlConn);
+
+                if(distroDb == null)
+                {
+                    message = distro.Name + " is not found in DB. Inserting...";
+
+                }
+                else
+                {
+                    if (distroDb.Description != distro.Description)
+                    {
+                        message = distro.Name + " found in DB but desc is outdated. Updating...";
+                        distroBL.Update(sqlConn, distroDb.Id, distro.Description);
+                    }
+                }
+
+                if (!string.IsNullOrEmpty(message))
+                {
+                    logger.Info(message);
+                    Console.WriteLine(message);
+                }
+            }
         }
 
         static string GetWebSiteData(string url)
@@ -179,7 +214,9 @@ namespace distroCrawler
 
                 string message = counter + ". data Parsed for " + distro.Name;
                 Console.WriteLine(message);
-                if (listDistro.Count > 10)
+
+                //TODO: Temporary Break.
+                if (listDistro.Count > 2)
                     break;
             }
 
