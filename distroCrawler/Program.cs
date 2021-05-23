@@ -126,7 +126,22 @@ namespace distroCrawler
 
             string fileName = @"C:\temp\distro.csv";
 
-            Helper.Utility.WriteCSV(listDistro, fileName);
+            List<distroTrend.Model.Distro> listDistroCSV = new List<distroTrend.Model.Distro>();
+            //Transform list for CSV.
+            foreach (distroTrend.Model.Distro distro in listDistro)
+            {
+                distroTrend.Model.Distro distroCSV = new distroTrend.Model.Distro();
+                distroCSV.Id = distro.Id;
+                distroCSV.Code = distro.Code;
+                distroCSV.Name = distro.Name;
+                distroCSV.Description = "\"" + distro.Description.Replace("\"", "\"\"") + "\"";
+                distroCSV.HomePage = distro.HomePage;
+                distroCSV.ImageURL = distro.ImageURL;
+
+                listDistroCSV.Add(distroCSV);
+            }
+
+            Helper.Utility.WriteCSV(listDistroCSV, fileName);
 
             Console.WriteLine("Date Exported to " + fileName);
             string message = "Data was extracted in " + (DateTime.Now - dt).Seconds + " secs.";
@@ -157,10 +172,10 @@ namespace distroCrawler
                 }
                 else
                 {
-                    if (distroDb.Description != distro.Description)
+                    if (distroDb.Description != distro.Description || distroDb.ImageURL != distro.ImageURL)
                     {
-                        message = distro.Name + " found in DB but desc is outdated. Updating...";
-                        distroBL.Update(sqlConn, distroDb.Id, distro.Description);
+                        message = distro.Name + " found in DB but details are outdated. Updating...";
+                        distroBL.Update(sqlConn, distroDb.Id, distro);
                     }
                 }
 
@@ -216,7 +231,7 @@ namespace distroCrawler
                 Console.WriteLine(message);
 
                 //TODO: Temporary Break.
-                if (listDistro.Count > 2)
+                if (listDistro.Count > 10)
                     break;
             }
 
@@ -249,8 +264,6 @@ namespace distroCrawler
                     }
                 }
             }
-
-            description = "\"" + description.Replace("\"", "\"\"") + "\"";
 
             distro.Description = description;
         }
