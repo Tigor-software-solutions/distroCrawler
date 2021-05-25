@@ -101,8 +101,17 @@ namespace distroCrawler
             }
             else if (argTuple.Item1 == "2")
             {
+                DateTime dt = DateTime.Now;
+                string message;
                 List<distroTrend.Model.Distro> listDistro = CrawlData();
+
+                DateTime dtUpdate = DateTime.Now;
                 UpdateDB(listDistro);
+                message = "Data was updated in " + (DateTime.Now - dtUpdate).Seconds + " secs.";
+                Console.WriteLine(message);
+
+                message = "Total Time taken is " + (DateTime.Now - dt).Seconds + " secs.";
+                Console.WriteLine(message);
             }
             else
             {
