@@ -240,7 +240,7 @@ namespace distroCrawler
                 Console.WriteLine(message);
 
                 //TODO: Temporary Break.
-                if (listDistro.Count > 10)
+                if (listDistro.Count > 1000)
                     break;
             }
 
