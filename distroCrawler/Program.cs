@@ -3,7 +3,9 @@ using NLog;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 
 namespace distroCrawler
@@ -90,7 +92,6 @@ namespace distroCrawler
             return argTuple;
         }
 
-
         private int MainWrapper(Tuple<string, string, string, string> argTuple)
         {
             int exitCode = 0;
@@ -146,6 +147,21 @@ namespace distroCrawler
                 distroCSV.Description = "\"" + distro.Description.Replace("\"", "\"\"") + "\"";
                 distroCSV.HomePage = distro.HomePage;
                 distroCSV.ImageURL = distro.ImageURL;
+
+                //Download Image.
+                if (!string.IsNullOrEmpty(distro.ImageURL))
+                {
+                    string urlImage = "https://distrowatch.com/" + distro.ImageURL;
+
+                    string directoryName = Path.GetDirectoryName(distro.ImageURL);
+
+                    if (!System.IO.Directory.Exists(directoryName))
+                        System.IO.Directory.CreateDirectory(directoryName);
+                    using (WebClient client = new WebClient())
+                    {
+                        client.DownloadFile(new Uri(urlImage), distro.ImageURL);
+                    }
+                }
 
                 listDistroCSV.Add(distroCSV);
             }
@@ -240,7 +256,7 @@ namespace distroCrawler
                 Console.WriteLine(message);
 
                 //TODO: Temporary Break.
-                if (listDistro.Count > 1000)
+                if (listDistro.Count > 300)
                     break;
             }
 
