@@ -108,10 +108,10 @@ namespace distroCrawler
 
                 DateTime dtUpdate = DateTime.Now;
                 UpdateDB(listDistro);
-                message = "Data was updated in " + (DateTime.Now - dtUpdate).Seconds + " secs.";
+                message = "Data was updated in " + (DateTime.Now - dtUpdate).Minutes + " mins " + (DateTime.Now - dtUpdate).Seconds + " secs.";
                 Console.WriteLine(message);
 
-                message = "Total Time taken is " + (DateTime.Now - dt).Seconds + " secs.";
+                message = "Total Time taken is " + (DateTime.Now - dt).Minutes + " mins " + (DateTime.Now - dt).Seconds + " secs.";
                 Console.WriteLine(message);
             }
             else
@@ -256,7 +256,7 @@ namespace distroCrawler
                 Console.WriteLine(message);
 
                 //TODO: Temporary Break.
-                if (listDistro.Count > 300)
+                if (listDistro.Count > 30)
                     break;
             }
 
