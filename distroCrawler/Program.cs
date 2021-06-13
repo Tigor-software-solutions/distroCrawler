@@ -29,6 +29,7 @@ namespace distroCrawler
             Console.WriteLine();
             Console.WriteLine("1 - Crawl Data.");
             Console.WriteLine("2 - Update Database");
+            Console.WriteLine("3 - Points Update");
             Console.WriteLine();
             Console.Write("Please enter your choice - ");
 
@@ -51,6 +52,7 @@ namespace distroCrawler
         private void CheckUserResponse()
         {
             var userInput = Console.ReadLine();
+            logger.Info("User Input = " + userInput);
             Tuple<string, string, string, string> argTuple = new Tuple<string, string, string, string>(userInput, null, null, null);
             MainWrapper(argTuple);
         }
@@ -100,14 +102,22 @@ namespace distroCrawler
             {
                 CrawlData();
             }
-            else if (argTuple.Item1 == "2")
+            else if (argTuple.Item1 == "2" || argTuple.Item1 == "3")
             {
                 DateTime dt = DateTime.Now;
                 string message;
-                List<distroTrend.Model.Distro> listDistro = CrawlData();
+
+                List<distroTrend.Model.Distro> listDistro = null;
+                if (argTuple.Item1 == "2")
+                    listDistro = CrawlData();
 
                 DateTime dtUpdate = DateTime.Now;
-                UpdateDB(listDistro);
+
+                if (argTuple.Item1 == "2")
+                    UpdateDB(listDistro);
+                else if (argTuple.Item1 == "3")
+                    PointsUpdate();
+
                 message = "Data was updated in " + (DateTime.Now - dtUpdate).Minutes + " mins " + (DateTime.Now - dtUpdate).Seconds + " secs.";
                 Console.WriteLine(message);
 
@@ -190,7 +200,7 @@ namespace distroCrawler
 
                 distroTrend.Model.Distro distroDb = distroBL.GetDistro(distro.Code, sqlConn);
 
-                if(distroDb == null)
+                if (distroDb == null)
                 {
                     message = distro.Name + " is not found in DB. Inserting...";
 
@@ -202,6 +212,39 @@ namespace distroCrawler
                         message = distro.Name + " found in DB but details are outdated. Updating...";
                         distroBL.Update(sqlConn, distroDb.Id, distro);
                     }
+                }
+
+                if (!string.IsNullOrEmpty(message))
+                {
+                    logger.Info(message);
+                    Console.WriteLine(message);
+                }
+            }
+        }
+        static void PointsUpdate()
+        {
+            BLL.Points pointsBL = new BLL.Points();
+
+            string sqlConn = System.Configuration.ConfigurationManager.AppSettings["dbConnection"];
+
+            string message = string.Empty;
+
+            string url = "https://distrowatch.com/dwres.php?resource=popularity";
+            string data = GetWebSiteData(url);
+            List<distroTrend.Model.Points> listDistroPoints = ParseDataDWPoints(data, sqlConn);
+
+            foreach (distroTrend.Model.Points objPoints in listDistroPoints)
+            {
+                message = string.Empty;
+
+                if (objPoints == null)
+                {
+                    message = objPoints.distroId + " is not found in DB. Inserting...";
+                }
+                else
+                {
+                    //pointsBL.Update(sqlConn, objPoints.distroId, objPoints);
+                    pointsBL.Insert(sqlConn, objPoints);
                 }
 
                 if (!string.IsNullOrEmpty(message))
@@ -261,6 +304,64 @@ namespace distroCrawler
             }
 
             return listDistro;
+        }
+
+        static List<distroTrend.Model.Points> ParseDataDWPoints(string data, string sqlConn)
+        {
+            BLL.Distro distroBL = new BLL.Distro();
+            List<distroTrend.Model.Distro> listDistro = distroBL.GetDistro(sqlConn);
+            List<distroTrend.Model.Points> listDistroPoints = new List<distroTrend.Model.Points>();
+            var doc = new HtmlAgilityPack.HtmlDocument();
+            doc.LoadHtml(data);
+
+            var nodes = doc.DocumentNode.SelectNodes(@"//td[@class='phr2']/a");
+
+            int counter = 0;
+
+            foreach (HtmlNode node in nodes)
+            {
+                counter++;
+                string title = node.InnerText;
+                string[] token = node.OuterHtml.Split(new char[] { '\"' }, StringSplitOptions.RemoveEmptyEntries);
+                string dwCode = string.Empty;
+                if (token.Length > 1)
+                    dwCode = token[1];
+
+                string code = GetCode(title);
+                Decimal points = 0;
+                string pointsString = string.Empty;
+
+                HtmlNode nodeTr = node.ParentNode.ParentNode;
+                if (nodeTr != null && nodeTr.ChildNodes.Count > 4)
+                    pointsString = nodeTr.ChildNodes[5].InnerText;
+                //HtmlNodeCollection nodePoints = nodeTr.SelectNodes(@"//td[@class='phr3']");
+
+                //foreach (HtmlNode nodeTd in nodePoints)
+                //{
+                //    pointsString = nodeTd.InnerText;
+                //}
+
+                Decimal.TryParse(pointsString, out points);
+                logger.Debug("Points in string=" + pointsString + ", and after convertion points=" + points);
+
+                distroTrend.Model.Distro distro = listDistro.Where(x => x.Code.Trim() == code).FirstOrDefault();
+                //distro.Id;
+
+                if (distro != null)
+                {
+                    distroTrend.Model.Points objPoints = new distroTrend.Model.Points();
+                    objPoints.distroId = distro.Id;
+                    objPoints.DistroWatchPoints = points;
+                    objPoints.Date = DateTime.Now;
+
+                    listDistroPoints.Add(objPoints);
+                }
+
+                //if (listDistroPoints.Count > 30)
+                //    break;
+            }
+
+            return listDistroPoints;
         }
         static void ParseDataSub(string data, string name, distroTrend.Model.Distro distro)
         {
