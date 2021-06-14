@@ -243,8 +243,10 @@ namespace distroCrawler
                 }
                 else
                 {
-                    //pointsBL.Update(sqlConn, objPoints.distroId, objPoints);
-                    pointsBL.Insert(sqlConn, objPoints);
+                    if (pointsBL.IsExists(sqlConn, objPoints.distroId, objPoints.Date))
+                        pointsBL.Update(sqlConn, objPoints);
+                    else
+                        pointsBL.Insert(sqlConn, objPoints);
                 }
 
                 if (!string.IsNullOrEmpty(message))
@@ -306,10 +308,10 @@ namespace distroCrawler
             return listDistro;
         }
 
-        static List<distroTrend.Model.Points> ParseDataDWPoints(string data, string sqlConn)
+        static List<distroTrend.Model.Points> ParseDataDWPoints(string data, string connString)
         {
             BLL.Distro distroBL = new BLL.Distro();
-            List<distroTrend.Model.Distro> listDistro = distroBL.GetDistro(sqlConn);
+            List<distroTrend.Model.Distro> listDistro = distroBL.GetDistro(connString);
             List<distroTrend.Model.Points> listDistroPoints = new List<distroTrend.Model.Points>();
             var doc = new HtmlAgilityPack.HtmlDocument();
             doc.LoadHtml(data);
@@ -354,7 +356,17 @@ namespace distroCrawler
                     objPoints.DistroWatchPoints = points;
                     objPoints.Date = DateTime.Now;
 
-                    listDistroPoints.Add(objPoints);
+                    distroTrend.Model.Points pointE = listDistroPoints.FirstOrDefault(p => p.distroId == objPoints.distroId);
+                    if (pointE != null)
+                    {
+                        pointE.DistroWatchPoints = points;
+                        logger.Debug("Updated in list, Id=" + objPoints.distroId + ", Points=" + objPoints.DistroWatchPoints);
+                    }
+                    else
+                    {
+                        listDistroPoints.Add(objPoints);
+                        logger.Debug("Added to list, Id="+ objPoints.distroId + ", Points="+ objPoints.DistroWatchPoints);
+                    }
                 }
 
                 //if (listDistroPoints.Count > 30)
