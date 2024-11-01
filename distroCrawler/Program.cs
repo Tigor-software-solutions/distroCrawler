@@ -198,12 +198,23 @@ namespace distroCrawler
             {
                 message = string.Empty;
 
-                distroTrend.Model.Distro distroDb = distroBL.GetDistro(distro.Code, sqlConn);
+                distroTrend.Model.Distro distroDb = distroBL.GetDistro(sqlConn, distro.Code);
 
                 if (distroDb == null)
                 {
                     message = distro.Name + " is not found in DB. Inserting...";
 
+                    try
+                    {
+                        distroBL.Insert(sqlConn, distro);
+                    }
+                    catch(Exception ex)
+                    {
+                        logger.Info(message);
+                        Console.WriteLine(message);
+                        message = "Insertion failed for " + distro.Name + ", Exception=" + ex.Message;
+                        logger.Error(message + ex);
+                    }
                 }
                 else
                 {
